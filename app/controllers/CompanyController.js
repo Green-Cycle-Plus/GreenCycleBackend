@@ -1,6 +1,19 @@
 import Company from "../models/Company.js";
 import CompanyWasteType from "../models/CompanyWasteType.js";
 
+export const Index = async (req, res) => {
+  try {
+    const companies = await Company.find();
+    return res.status(200).json({
+      success: true,
+      message: "Companies",
+      data: companies,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 export const register = async (req, res) => {
   const {
     companyId,

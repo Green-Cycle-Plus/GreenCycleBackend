@@ -1,6 +1,19 @@
 import { body, validationResult } from "express-validator";
 import WasteType from "../models/WasteType.js";
 
+export const index = async (req, res) => {
+  try {
+    const wastetype = await WasteType.find();
+    return res.status(200).json({
+      success: true,
+      message: "All Waste Type",
+      data: wastetype,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 export const createWaste = async (req, res) => {
   await Promise.all([
     body("name")
@@ -21,7 +34,7 @@ export const createWaste = async (req, res) => {
       .isURL()
       .withMessage("Image must be a valid URL.")
       .optional({ nullable: true })
-      .run(req)
+      .run(req),
   ]);
 
   const errors = validationResult(req);
