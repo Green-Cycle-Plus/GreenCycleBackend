@@ -1,2 +1,9 @@
-.env
+# Environment config
+.env  
+.env.local
 
+# Dependency directories
+node_modules/
+
+# OS
+.DS_Store
