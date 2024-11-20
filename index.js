@@ -5,7 +5,15 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
+import cors from "cors";
+
 import { generateApiKey } from "./utils/helper.js";
+
+const isDevelopment = process.env.DEV_MODE === "development";
+
+const corsOptions = isDevelopment
+  ? { origin: "*" } // Allow all origins for testing
+  : { origin: "https://greencycleplus.com" }; // Restrict to your production frontend
 
 const app = express();
 
@@ -22,6 +30,10 @@ mongoose
 
 //Middlewares
 app.use(express.json());
+
+app.use(cors(corsOptions)); // Apply CORS settings
+app.options("*", cors(corsOptions)); // Preflight requests
+
 app.use(helmet());
 app.use(morgan("common"));
 
@@ -47,5 +59,5 @@ app.post("/api/generate-key", async (req, res) => {
 });
 
 app.listen(8800, () => {
-  console.log("Backend Server is running...");
+  console.log(`Server running in ${process.env.DEV_MODE} mode on port 8800`)
 });
