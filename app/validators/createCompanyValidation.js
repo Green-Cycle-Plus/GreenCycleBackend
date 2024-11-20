@@ -6,7 +6,20 @@ export const validateRegister = [
     .isNumeric()
     .withMessage("Company ID must be a number.")
     .notEmpty()
-    .withMessage("Company ID is required."),
+    .withMessage("Company ID is required.")
+    .custom(async (value) => {
+      try {
+        const company = await Company.findOne({
+          companyId: value,
+        });
+        if (company) {
+          throw new Error("Company ID already exists.");
+        }
+      } catch (err) {
+        throw new Error(err.message);
+        // return res.status(500).json({ success: false, error: err.message });
+      }
+    }),
   body("companyName")
     .isString()
     .withMessage("Company Name must be a string.")
@@ -21,7 +34,7 @@ export const validateRegister = [
     .withMessage("Email is required.")
     .custom(async (value) => {
       const company = await Company.findOne({
-        where: { email: value },
+        email: value,
       });
       if (company) {
         throw new Error("Company email already exists.");
@@ -35,7 +48,7 @@ export const validateRegister = [
     .custom(async (value) => {
       try {
         const company = await Company.findOne({
-          where: { phoneNumber: value },
+          phoneNumber: value,
         });
         if (company) {
           throw new Error("Company phone number already exists.");

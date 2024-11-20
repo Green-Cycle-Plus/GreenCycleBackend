@@ -25,6 +25,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
 
+//ROuute Registered Here.
 app.use("/api", apiRoutes());
 
 app.post("/api/generate-key", async (req, res) => {

@@ -27,14 +27,6 @@ const CompanySchema = new Schema(
       type: String,
       required: false,
     },
-    lat: {
-      type: Number,
-      required: true,
-    },
-    lon: {
-      type: Number,
-      required: true,
-    },
     companyLogo: {
       type: String,
       required: false,
@@ -43,8 +35,22 @@ const CompanySchema = new Schema(
       type: String,
       required: true,
     },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"], // Must always be 'Point'
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // Array of [longitude, latitude]
+        required: true,
+      },
+    },
   },
   { timestamps: true }
 );
+
+// 2dsphere index for geospatial queries
+CompanySchema.index({ location: "2dsphere" });
 
 export default model("Company", CompanySchema);

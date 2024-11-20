@@ -14,6 +14,42 @@ export const Index = async (req, res) => {
   }
 };
 
+export const getNearby = async (req, res) => {
+  try {
+    const { latitude, longitude, radius } = req.query;
+
+    if (!latitude || !longitude || !radius) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required parameters" });
+    }
+
+    const radiusInMeters = radius * 1000;
+
+    const companies = await Company.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: "Point",
+            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+          },
+          distanceField: "distance",
+          maxDistance: radiusInMeters,
+          spherical: true,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Companies near you.",
+      data: companies,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 export const register = async (req, res) => {
   const {
     companyId,
@@ -29,17 +65,21 @@ export const register = async (req, res) => {
 
   //Insert to DB Here
   try {
-    const company = await Company.create({
-      companyId,
-      companyName,
-      email,
-      phoneNumber,
-      physicalAddress,
-      lat,
-      lon,
-      companyLogo,
-      licenseDocument,
+    const company = new Company({
+      companyId: companyId,
+      companyName: companyName,
+      email: email,
+      phoneNumber: phoneNumber,
+      physicalAddress: physicalAddress,
+      companyLogo: companyLogo,
+      licenseDocument: licenseDocument,
+      location: {
+        type: "Point",
+        coordinates: [lon, lat],
+      },
     });
+
+    company.save();
 
     return res.status(200).json({
       success: true,
