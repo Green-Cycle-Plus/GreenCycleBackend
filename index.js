@@ -58,6 +58,11 @@ app.post("/api/generate-key", async (req, res) => {
   }
 });
 
+// 404 Middleware
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
 app.listen(8800, () => {
-  console.log(`Server running in ${process.env.DEV_MODE} mode on port 8800`)
+  console.log(`Server running in ${process.env.DEV_MODE} mode on port 8800`);
 });
