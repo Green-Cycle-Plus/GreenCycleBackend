@@ -1,5 +1,7 @@
 import { body, validationResult } from "express-validator";
 import Company from "../models/Company.js";
+import WasteType from "../models/WasteType.js";
+import CompanyWasteType from "../models/CompanyWasteType.js";
 
 export const validateRegister = [
   body("companyId")
@@ -80,11 +82,41 @@ export const validateRegister = [
     .withMessage("License Document must be a valid URL.")
     .notEmpty()
     .withMessage("License Document is required."),
+  body("wasteTypeId")
+    .notEmpty()
+    .withMessage("WasteTypeId must be a number.")
+    .custom(async (value, { req }) => {
+      try {
+        const wasteType = await WasteType.findById(value);
+        if (!wasteType) {
+          throw new Error("Invalid Waste Type ID.");
+        }
+      } catch (err) {
+        console.error("Database error:", err.message);
+        throw new Error("Database error: " + err.message);
+      }
+    }),
+  body("min_weight")
+    .notEmpty()
+    .withMessage("Min Weight is required.")
+    .isNumeric()
+    .withMessage("Min Weight must be a number."),
+
+  body("amount")
+    .notEmpty()
+    .withMessage("Amount is required.")
+    .isNumeric()
+    .withMessage("Amount must be a number."),
+
+  body("description")
+    .optional()
+    .isString()
+    .withMessage("Description must be a string."),
 
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ success:false, errors: errors.array() });
+      return res.status(422).json({ success: false, errors: errors.array() });
     }
     next();
   },
