@@ -2,6 +2,8 @@ import Company from "../models/Company.js";
 import CompanyWasteType from "../models/CompanyWasteType.js";
 import WasteType from "../models/WasteType.js";
 
+import mongoose from "mongoose";
+
 export const Index = async (req, res) => {
   try {
     const companies = await Company.find();
@@ -14,8 +16,6 @@ export const Index = async (req, res) => {
     return res.status(500).json({ success: false, error: err.message });
   }
 };
-
-import mongoose from "mongoose";
 
 export const show = async (req, res) => {
   try {
@@ -203,5 +203,54 @@ export const addWasteCategory = async (req, res) => {
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const companyGroupByCategory = async (req, res) => {
+  try {
+    const result = await CompanyWasteType.aggregate([
+      {
+        $lookup: {
+          from: "wastetypes", // Collection name for WasteType
+          localField: "wasteTypeId",
+          foreignField: "_id",
+          as: "wasteTypeDetails",
+        },
+      },
+      { $unwind: "$wasteTypeDetails" },
+      // Lookup Company details
+      {
+        $lookup: {
+          from: "companies", // Collection name for Companies
+          localField: "companyId",
+          foreignField: "_id",
+          as: "companyDetails",
+        },
+      },
+      { $unwind: "$companyDetails" }, // Unwind Company details
+
+      // Group by waste type
+      {
+        $group: {
+          _id: "$wasteTypeId", // Group by wasteTypeId
+          wasteType: { $first: "$wasteTypeDetails.name" }, // Waste type name
+          companies: { $push: "$companyDetails.companyName" }, // List of company names
+          totalCompanies: { $sum: 1 }, // Count of companies
+        },
+      },
+
+      // Optional: Sort by total companies in descending order
+      { $sort: { totalCompanies: -1 } },
+    ]);
+
+    console.log(result);
+    return res
+      .status(200)
+      .json({ success: true, message: "Waste type fetched", data: result });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error " + error });
   }
 };

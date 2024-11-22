@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   addWasteCategory,
+  companyGroupByCategory,
   getNearby,
   Index,
   register,
@@ -13,9 +14,10 @@ const router = Router();
 
 export const companyRoute = () => {
   router.get("/", Index);
-  router.get("/show/:company_id", show);
+  router.get("/waste-types", companyGroupByCategory);
   router.get("/nearby", getNearby);
   router.post("/create", validateRegister, register);
+  router.get("/show/:company_id", show);
   router.post(
     "/add-waste-category",
     validateCompanyWasteCategory,
